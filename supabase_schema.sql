@@ -57,6 +57,14 @@ create table expenses (
   created_at timestamptz default now()
 );
 
+-- Expense categories (user-managed list)
+create table expense_categories (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users not null,
+  name text not null,
+  created_at timestamptz default now()
+);
+
 -- Maintenance work types per car (with km interval)
 create table maintenance_works (
   id uuid primary key default gen_random_uuid(),
@@ -88,6 +96,7 @@ alter table drivers enable row level security;
 alter table assignments enable row level security;
 alter table payments enable row level security;
 alter table expenses enable row level security;
+alter table expense_categories enable row level security;
 alter table maintenance_works enable row level security;
 alter table maintenance_records enable row level security;
 
@@ -96,5 +105,6 @@ create policy "own drivers" on drivers for all using (auth.uid() = user_id) with
 create policy "own assignments" on assignments for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 create policy "own payments" on payments for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 create policy "own expenses" on expenses for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+create policy "own expense_categories" on expense_categories for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 create policy "own maintenance_works" on maintenance_works for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 create policy "own maintenance_records" on maintenance_records for all using (auth.uid() = user_id) with check (auth.uid() = user_id);

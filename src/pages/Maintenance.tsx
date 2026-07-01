@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from 'react'
 import { supabase } from '../lib/supabase'
 import type { Car, MaintenanceRecord, MaintenanceWork } from '../types'
-import { Plus, Trash2, AlertTriangle, CheckCircle } from 'lucide-react'
+import { Plus, Trash2, AlertTriangle, CheckCircle, Wrench } from 'lucide-react'
 
 function today() {
   return new Date().toISOString().slice(0, 10)
@@ -23,6 +23,8 @@ export default function Maintenance() {
   const [loading, setLoading] = useState(true)
   const [selectedCar, setSelectedCar] = useState<string>('')
   const [showForm, setShowForm] = useState(false)
+  const [showWorksPanel, setShowWorksPanel] = useState(false)
+  const [newWork, setNewWork] = useState({ name: '', interval_km: '' })
   const [currentMileage, setCurrentMileage] = useState('')
   const [form, setForm] = useState({ date: today(), mileage: '', works: [] as string[], cost: '', note: '' })
   const [formError, setFormError] = useState<string | null>(null)
@@ -71,6 +73,30 @@ export default function Maintenance() {
     if (!toInsert.length) return
     const { data } = await supabase.from('maintenance_works').insert(toInsert).select()
     if (data) setWorks(prev => [...prev, ...data])
+  }
+
+  async function handleAddWork(e: React.FormEvent) {
+    e.preventDefault()
+    const name = newWork.name.trim()
+    const interval_km = parseInt(newWork.interval_km)
+    if (!name || isNaN(interval_km) || interval_km <= 0 || !selectedCar) return
+    const { data: { user } } = await supabase.auth.getUser()
+    const { data, error } = await supabase.from('maintenance_works').insert({
+      user_id: user!.id,
+      car_id: selectedCar,
+      name,
+      interval_km,
+    }).select().single()
+    if (!error && data) {
+      setWorks(prev => [...prev, data])
+      setNewWork({ name: '', interval_km: '' })
+    }
+  }
+
+  async function handleDeleteWork(id: string) {
+    if (!confirm('Удалить вид работы?')) return
+    await supabase.from('maintenance_works').delete().eq('id', id)
+    setWorks(prev => prev.filter(w => w.id !== id))
   }
 
   async function handleAdd(e: React.FormEvent) {
@@ -124,12 +150,46 @@ export default function Maintenance() {
             className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500">
             {cars.map(c => <option key={c.id} value={c.id}>{c.name} ({c.plate})</option>)}
           </select>
+          <button onClick={() => setShowWorksPanel(v => !v)}
+            className="flex items-center gap-2 bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+            <Wrench size={16} /> Виды работ
+          </button>
           <button onClick={() => { setShowForm(v => !v); setFormError(null) }}
             className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
             <Plus size={16} /> Запись ТО
           </button>
         </div>
       </div>
+
+      {showWorksPanel && (
+        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 mb-6">
+          <h3 className="text-base font-semibold text-white mb-4">Виды работ для этой машины</h3>
+          <div className="flex flex-wrap gap-2 mb-4">
+            {carWorks.map(w => (
+              <span key={w.id} className="flex items-center gap-2 bg-gray-800 border border-gray-700 rounded-lg pl-3 pr-2 py-1.5 text-sm text-gray-200">
+                {w.name} <span className="text-gray-500">· {w.interval_km.toLocaleString()} км</span>
+                <button onClick={() => handleDeleteWork(w.id)} className="text-gray-500 hover:text-red-400 transition-colors">
+                  <Trash2 size={13} />
+                </button>
+              </span>
+            ))}
+            {carWorks.length === 0 && <p className="text-gray-500 text-sm">Нет видов работ для этой машины.</p>}
+          </div>
+          <form onSubmit={handleAddWork} className="flex gap-3">
+            <input
+              value={newWork.name} onChange={e => setNewWork(w => ({ ...w, name: e.target.value }))}
+              placeholder="Название работы"
+              className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
+            />
+            <input
+              type="number" min="1" value={newWork.interval_km} onChange={e => setNewWork(w => ({ ...w, interval_km: e.target.value }))}
+              placeholder="Интервал, км"
+              className="w-40 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
+            />
+            <button type="submit" className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">Добавить</button>
+          </form>
+        </div>
+      )}
 
       {/* Mileage checker */}
       <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 mb-6">

@@ -54,6 +54,12 @@ export interface MaintenanceWork {
   created_at: string
 }
 
+export interface ExpenseCategory {
+  id: string
+  name: string
+  created_at: string
+}
+
 export interface MaintenanceRecord {
   id: string
   car_id: string
