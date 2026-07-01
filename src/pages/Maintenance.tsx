@@ -142,10 +142,10 @@ export default function Maintenance() {
   const fmt = (n: number) => n.toLocaleString('ru-RU') + ' тг'
 
   return (
-    <div className="p-8">
-      <div className="flex items-center justify-between mb-6">
+    <div className="p-4 md:p-8">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <h2 className="text-2xl font-bold text-white">Техническое обслуживание</h2>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           <select value={selectedCar} onChange={e => { setSelectedCar(e.target.value); ensureDefaultWorks(e.target.value) }}
             className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500">
             {cars.map(c => <option key={c.id} value={c.id}>{c.name} ({c.plate})</option>)}
@@ -175,7 +175,7 @@ export default function Maintenance() {
             ))}
             {carWorks.length === 0 && <p className="text-gray-500 text-sm">Нет видов работ для этой машины.</p>}
           </div>
-          <form onSubmit={handleAddWork} className="flex gap-3">
+          <form onSubmit={handleAddWork} className="flex flex-wrap gap-3">
             <input
               value={newWork.name} onChange={e => setNewWork(w => ({ ...w, name: e.target.value }))}
               placeholder="Название работы"
@@ -242,7 +242,7 @@ export default function Maintenance() {
       {/* Add record form */}
       {showForm && (
         <form onSubmit={handleAdd} className="bg-gray-900 border border-gray-800 rounded-xl p-6 mb-6 space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="text-xs text-gray-400 mb-1 block">Дата</label>
               <input type="date" required value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))}
@@ -258,7 +258,7 @@ export default function Maintenance() {
 
           <div>
             <label className="text-xs text-gray-400 mb-2 block">Выполненные работы</label>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {carWorks.map(w => (
                 <label key={w.id} className="flex items-center gap-2 cursor-pointer">
                   <input type="checkbox" checked={form.works.includes(w.name)}
@@ -270,7 +270,7 @@ export default function Maintenance() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="text-xs text-gray-400 mb-1 block">Стоимость (тг, опционально)</label>
               <input type="number" min="0" value={form.cost} onChange={e => setForm(f => ({ ...f, cost: e.target.value }))}

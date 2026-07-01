@@ -107,10 +107,10 @@ export default function Payments() {
   const fmt = (n: number) => n.toLocaleString('ru-RU') + ' тг'
 
   return (
-    <div className="p-8">
-      <div className="flex items-center justify-between mb-6">
+    <div className="p-4 md:p-8">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <h2 className="text-2xl font-bold text-white">Доходы / Платежи</h2>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           <input
             type="month" value={month} onChange={e => setMonth(e.target.value)}
             className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
@@ -125,8 +125,8 @@ export default function Payments() {
       </div>
 
       {showForm && (
-        <form onSubmit={handleAdd} className="bg-gray-900 border border-gray-800 rounded-xl p-6 mb-6 grid grid-cols-2 gap-4">
-          <div className="col-span-2">
+        <form onSubmit={handleAdd} className="bg-gray-900 border border-gray-800 rounded-xl p-6 mb-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="sm:col-span-2">
             <label className="text-xs text-gray-400 mb-1 block">Водитель / Машина</label>
             <select
               required value={form.assignment_id} onChange={e => setForm(f => ({ ...f, assignment_id: e.target.value }))}
@@ -155,13 +155,13 @@ export default function Payments() {
               placeholder="15000"
               className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500" />
           </div>
-          <div className="col-span-2">
+          <div className="sm:col-span-2">
             <label className="text-xs text-gray-400 mb-1 block">Заметка (опционально)</label>
             <input value={form.note} onChange={e => setForm(f => ({ ...f, note: e.target.value }))}
               placeholder="За 2 дня"
               className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500" />
           </div>
-          <div className="col-span-2 flex gap-3 justify-end">
+          <div className="sm:col-span-2 flex gap-3 justify-end">
             <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 text-sm text-gray-400 hover:text-white transition-colors">Отмена</button>
             <button type="submit" className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">Сохранить</button>
           </div>

@@ -43,8 +43,8 @@ export default function Chat() {
   }
 
   return (
-    <div className="flex flex-col h-screen">
-      <div className="border-b border-gray-800 px-8 py-5">
+    <div className="flex flex-col h-full">
+      <div className="border-b border-gray-800 px-4 py-4 md:px-8 md:py-5">
         <h2 className="text-2xl font-bold text-white">AI-агент</h2>
         <p className="text-sm text-gray-400 mt-1">Задайте вопрос на русском языке</p>
       </div>

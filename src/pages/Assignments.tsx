@@ -62,8 +62,8 @@ export default function Assignments() {
   const ended = assignments.filter(a => a.ended_at)
 
   return (
-    <div className="p-8">
-      <div className="flex items-center justify-between mb-6">
+    <div className="p-4 md:p-8">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <h2 className="text-2xl font-bold text-white">Назначения</h2>
         <button onClick={() => setShowForm(v => !v)}
           className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
@@ -72,7 +72,7 @@ export default function Assignments() {
       </div>
 
       {showForm && (
-        <form onSubmit={handleAdd} className="bg-gray-900 border border-gray-800 rounded-xl p-6 mb-6 grid grid-cols-3 gap-4">
+        <form onSubmit={handleAdd} className="bg-gray-900 border border-gray-800 rounded-xl p-6 mb-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
             <label className="text-xs text-gray-400 mb-1 block">Машина</label>
             <select required value={form.car_id} onChange={e => setForm(f => ({ ...f, car_id: e.target.value }))}
@@ -94,7 +94,7 @@ export default function Assignments() {
             <input type="date" required value={form.started_at} onChange={e => setForm(f => ({ ...f, started_at: e.target.value }))}
               className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500" />
           </div>
-          <div className="col-span-3 flex gap-3 justify-end">
+          <div className="sm:col-span-3 flex gap-3 justify-end">
             <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 text-sm text-gray-400 hover:text-white transition-colors">Отмена</button>
             <button type="submit" className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">Сохранить</button>
           </div>

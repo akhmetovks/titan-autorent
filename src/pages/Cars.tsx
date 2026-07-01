@@ -44,8 +44,8 @@ export default function Cars() {
   if (loading) return <div className="p-8 text-gray-400">Загрузка...</div>
 
   return (
-    <div className="p-8">
-      <div className="flex items-center justify-between mb-6">
+    <div className="p-4 md:p-8">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <h2 className="text-2xl font-bold text-white">Машины</h2>
         <button
           onClick={() => setShowForm(v => !v)}
@@ -57,7 +57,7 @@ export default function Cars() {
 
       {showForm && (
         <form onSubmit={handleAdd} className="bg-gray-900 border border-gray-800 rounded-xl p-6 mb-6 grid grid-cols-2 gap-4">
-          <div className="col-span-2 grid grid-cols-2 gap-4">
+          <div className="col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="text-xs text-gray-400 mb-1 block">Название</label>
               <input
