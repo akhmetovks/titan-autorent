@@ -25,6 +25,7 @@ export default function Maintenance() {
   const [showForm, setShowForm] = useState(false)
   const [currentMileage, setCurrentMileage] = useState('')
   const [form, setForm] = useState({ date: today(), mileage: '', works: [] as string[], cost: '', note: '' })
+  const [formError, setFormError] = useState<string | null>(null)
 
   useEffect(() => {
     Promise.all([
@@ -74,7 +75,11 @@ export default function Maintenance() {
 
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault()
-    if (!form.works.length) return
+    setFormError(null)
+    if (!form.works.length) {
+      setFormError('Выберите хотя бы одну выполненную работу.')
+      return
+    }
     const { data: { user } } = await supabase.auth.getUser()
     const { data, error } = await supabase.from('maintenance_records').insert({
       user_id: user!.id,
@@ -89,6 +94,8 @@ export default function Maintenance() {
       setRecords(prev => [data, ...prev])
       setForm({ date: today(), mileage: '', works: [], cost: '', note: '' })
       setShowForm(false)
+    } else if (error) {
+      setFormError(error.message)
     }
   }
 
@@ -117,7 +124,7 @@ export default function Maintenance() {
             className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500">
             {cars.map(c => <option key={c.id} value={c.id}>{c.name} ({c.plate})</option>)}
           </select>
-          <button onClick={() => setShowForm(v => !v)}
+          <button onClick={() => { setShowForm(v => !v); setFormError(null) }}
             className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
             <Plus size={16} /> Запись ТО
           </button>
@@ -217,6 +224,8 @@ export default function Maintenance() {
                 className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500" />
             </div>
           </div>
+
+          {formError && <p className="text-red-400 text-sm">{formError}</p>}
 
           <div className="flex gap-3 justify-end">
             <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 text-sm text-gray-400 hover:text-white transition-colors">Отмена</button>
