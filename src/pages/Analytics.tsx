@@ -13,10 +13,6 @@ function firstDayOfMonth(d: Date) {
   return new Date(d.getFullYear(), d.getMonth(), 1)
 }
 
-function lastDayOfMonth(d: Date) {
-  return new Date(d.getFullYear(), d.getMonth() + 1, 0)
-}
-
 export default function Analytics() {
   const [cars, setCars] = useState<Car[]>([])
   const [assignments, setAssignments] = useState<Assignment[]>([])
@@ -26,7 +22,7 @@ export default function Analytics() {
 
   const today = new Date()
   const [start, setStart] = useState(fmtDate(new Date(today.getFullYear(), 0, 1)))
-  const [end, setEnd] = useState(fmtDate(new Date(today.getFullYear(), 11, 31)))
+  const [end, setEnd] = useState(fmtDate(today))
 
   useEffect(() => {
     Promise.all([
@@ -45,11 +41,11 @@ export default function Analytics() {
 
   function selectThisMonth() {
     setStart(fmtDate(firstDayOfMonth(today)))
-    setEnd(fmtDate(lastDayOfMonth(today)))
+    setEnd(fmtDate(today))
   }
   function selectThisYear() {
     setStart(fmtDate(new Date(today.getFullYear(), 0, 1)))
-    setEnd(fmtDate(new Date(today.getFullYear(), 11, 31)))
+    setEnd(fmtDate(today))
   }
   function selectLastYear() {
     setStart(fmtDate(new Date(today.getFullYear() - 1, 0, 1)))
