@@ -4,7 +4,8 @@ import type { Car, MaintenanceRecord, MaintenanceWork } from '../types'
 import { Plus, Trash2, AlertTriangle, CheckCircle, Wrench } from 'lucide-react'
 
 function today() {
-  return new Date().toISOString().slice(0, 10)
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
 const DEFAULT_WORKS = [

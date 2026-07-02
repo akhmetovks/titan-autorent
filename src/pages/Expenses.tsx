@@ -5,8 +5,12 @@ import { Plus, Trash2, Tag } from 'lucide-react'
 
 const DEFAULT_CATEGORIES = ['Топливо', 'Ремонт', 'ТО', 'Мойка', 'Штраф', 'Страховка', 'Другое']
 
+function fmtDate(d: Date) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
 function today() {
-  return new Date().toISOString().slice(0, 10)
+  return fmtDate(new Date())
 }
 
 export default function Expenses() {
@@ -65,8 +69,7 @@ export default function Expenses() {
   }
 
   const monthStart = month + '-01'
-  const monthEnd = new Date(parseInt(month.slice(0, 4)), parseInt(month.slice(5, 7)), 0)
-    .toISOString().slice(0, 10)
+  const monthEnd = fmtDate(new Date(parseInt(month.slice(0, 4)), parseInt(month.slice(5, 7)), 0))
 
   const monthExpenses = expenses.filter(e => e.date >= monthStart && e.date <= monthEnd)
   const total = monthExpenses.reduce((s, e) => s + Number(e.amount), 0)

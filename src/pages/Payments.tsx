@@ -13,8 +13,12 @@ function workingDaysInRange(from: Date, to: Date, restDay: number): number {
   return count
 }
 
+function fmtDate(d: Date) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
 function today() {
-  return new Date().toISOString().slice(0, 10)
+  return fmtDate(new Date())
 }
 
 export default function Payments() {
@@ -43,8 +47,7 @@ export default function Payments() {
   }, [])
 
   const monthStart = month + '-01'
-  const monthEnd = new Date(parseInt(month.slice(0, 4)), parseInt(month.slice(5, 7)), 0)
-    .toISOString().slice(0, 10)
+  const monthEnd = fmtDate(new Date(parseInt(month.slice(0, 4)), parseInt(month.slice(5, 7)), 0))
 
   // Assignments active in selected month
   const activeAssignments = useMemo(() => {
