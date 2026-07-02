@@ -1,13 +1,16 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import type { Driver } from '../types'
-import { Plus, Trash2 } from 'lucide-react'
+import { Plus, Trash2, Pencil } from 'lucide-react'
+
+const EMPTY_FORM = { name: '', phone: '' }
 
 export default function Drivers() {
   const [drivers, setDrivers] = useState<Driver[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
-  const [form, setForm] = useState({ name: '', phone: '' })
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [form, setForm] = useState(EMPTY_FORM)
 
   useEffect(() => {
     supabase.from('drivers').select('*').order('created_at').then(({ data }) => {
@@ -16,18 +19,48 @@ export default function Drivers() {
     })
   }, [])
 
-  async function handleAdd(e: React.FormEvent) {
+  function toggleAddForm() {
+    if (showForm && editingId === null) {
+      setShowForm(false)
+    } else {
+      setEditingId(null)
+      setForm(EMPTY_FORM)
+      setShowForm(true)
+    }
+  }
+
+  function startEdit(driver: Driver) {
+    setForm({ name: driver.name, phone: driver.phone || '' })
+    setEditingId(driver.id)
+    setShowForm(true)
+  }
+
+  function closeForm() {
+    setShowForm(false)
+    setEditingId(null)
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    const { data: { user } } = await supabase.auth.getUser()
-    const { data, error } = await supabase.from('drivers').insert({
-      user_id: user!.id,
+    const payload = {
       name: form.name.trim(),
       phone: form.phone.trim() || null,
-    }).select().single()
-    if (!error && data) {
-      setDrivers(prev => [...prev, data])
-      setForm({ name: '', phone: '' })
-      setShowForm(false)
+    }
+    if (editingId) {
+      const { data, error } = await supabase.from('drivers').update(payload).eq('id', editingId).select().single()
+      if (!error && data) {
+        setDrivers(prev => prev.map(d => d.id === editingId ? data : d))
+        setForm(EMPTY_FORM)
+        closeForm()
+      }
+    } else {
+      const { data: { user } } = await supabase.auth.getUser()
+      const { data, error } = await supabase.from('drivers').insert({ user_id: user!.id, ...payload }).select().single()
+      if (!error && data) {
+        setDrivers(prev => [...prev, data])
+        setForm(EMPTY_FORM)
+        closeForm()
+      }
     }
   }
 
@@ -44,7 +77,7 @@ export default function Drivers() {
       <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <h2 className="text-2xl font-bold text-white">Водители</h2>
         <button
-          onClick={() => setShowForm(v => !v)}
+          onClick={toggleAddForm}
           className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
         >
           <Plus size={16} /> Добавить
@@ -52,7 +85,7 @@ export default function Drivers() {
       </div>
 
       {showForm && (
-        <form onSubmit={handleAdd} className="bg-gray-900 border border-gray-800 rounded-xl p-6 mb-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit} className="bg-gray-900 border border-gray-800 rounded-xl p-6 mb-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="text-xs text-gray-400 mb-1 block">Имя</label>
             <input
@@ -70,8 +103,8 @@ export default function Drivers() {
             />
           </div>
           <div className="col-span-2 flex gap-3 justify-end">
-            <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 text-sm text-gray-400 hover:text-white transition-colors">Отмена</button>
-            <button type="submit" className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">Сохранить</button>
+            <button type="button" onClick={closeForm} className="px-4 py-2 text-sm text-gray-400 hover:text-white transition-colors">Отмена</button>
+            <button type="submit" className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">{editingId ? 'Обновить' : 'Сохранить'}</button>
           </div>
         </form>
       )}
@@ -83,9 +116,14 @@ export default function Drivers() {
               <p className="font-semibold text-white">{driver.name}</p>
               <p className="text-sm text-gray-400">{driver.phone || 'Телефон не указан'}</p>
             </div>
-            <button onClick={() => handleDelete(driver.id)} className="text-gray-600 hover:text-red-400 transition-colors">
-              <Trash2 size={15} />
-            </button>
+            <div className="flex items-center gap-2">
+              <button onClick={() => startEdit(driver)} className="text-gray-600 hover:text-blue-400 transition-colors">
+                <Pencil size={15} />
+              </button>
+              <button onClick={() => handleDelete(driver.id)} className="text-gray-600 hover:text-red-400 transition-colors">
+                <Trash2 size={15} />
+              </button>
+            </div>
           </div>
         ))}
         {drivers.length === 0 && (

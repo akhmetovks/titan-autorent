@@ -1,7 +1,8 @@
 import { useEffect, useState, useMemo } from 'react'
 import { supabase } from '../lib/supabase'
-import type { Car, Payment, Expense, Assignment } from '../types'
+import type { Car, Driver, Payment, Expense, Assignment } from '../types'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts'
+import { Plus } from 'lucide-react'
 
 const MONTHS = ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек']
 
@@ -18,6 +19,7 @@ function firstDayOfMonth(d: Date) {
 
 export default function Analytics() {
   const [cars, setCars] = useState<Car[]>([])
+  const [drivers, setDrivers] = useState<Driver[]>([])
   const [assignments, setAssignments] = useState<Assignment[]>([])
   const [payments, setPayments] = useState<Payment[]>([])
   const [expenses, setExpenses] = useState<Expense[]>([])
@@ -27,20 +29,46 @@ export default function Analytics() {
   const [start, setStart] = useState(fmtDate(new Date(today.getFullYear(), 0, 1)))
   const [end, setEnd] = useState(fmtDate(today))
 
+  const [quickForm, setQuickForm] = useState({ assignment_id: '', date: fmtDate(today), amount: '' })
+  const [quickSaving, setQuickSaving] = useState(false)
+
   useEffect(() => {
     Promise.all([
       supabase.from('cars').select('*'),
+      supabase.from('drivers').select('*'),
       supabase.from('assignments').select('*'),
       supabase.from('payments').select('*'),
       supabase.from('expenses').select('*'),
-    ]).then(([carsRes, assignRes, payRes, expRes]) => {
+    ]).then(([carsRes, driversRes, assignRes, payRes, expRes]) => {
       setCars(carsRes.data || [])
+      setDrivers(driversRes.data || [])
       setAssignments(assignRes.data || [])
       setPayments(payRes.data || [])
       setExpenses(expRes.data || [])
       setLoading(false)
     })
   }, [])
+
+  const activeAssignments = useMemo(() => assignments.filter(a => !a.ended_at), [assignments])
+
+  async function handleQuickPayment(e: React.FormEvent) {
+    e.preventDefault()
+    if (!quickForm.assignment_id || !quickForm.amount) return
+    setQuickSaving(true)
+    const { data: { user } } = await supabase.auth.getUser()
+    const { data, error } = await supabase.from('payments').insert({
+      user_id: user!.id,
+      assignment_id: quickForm.assignment_id,
+      date: quickForm.date,
+      amount: parseFloat(quickForm.amount),
+      note: null,
+    }).select().single()
+    if (!error && data) {
+      setPayments(prev => [data, ...prev])
+      setQuickForm(f => ({ ...f, amount: '' }))
+    }
+    setQuickSaving(false)
+  }
 
   function selectThisMonth() {
     setStart(fmtDate(firstDayOfMonth(today)))
@@ -127,6 +155,48 @@ export default function Analytics() {
           <input type="date" value={end} onChange={e => setEnd(e.target.value)}
             className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500" />
         </div>
+      </div>
+
+      {/* Quick payment widget */}
+      <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 mb-8">
+        <h3 className="text-base font-semibold text-white mb-4">Быстрый платёж</h3>
+        {activeAssignments.length === 0 ? (
+          <p className="text-gray-500 text-sm">Нет активных назначений — сначала назначьте водителя на машину.</p>
+        ) : (
+          <form onSubmit={handleQuickPayment} className="flex flex-wrap items-end gap-3">
+            <div className="flex-1 min-w-[220px]">
+              <label className="text-xs text-gray-400 mb-1 block">Водитель / Машина</label>
+              <select required value={quickForm.assignment_id} onChange={e => setQuickForm(f => ({ ...f, assignment_id: e.target.value }))}
+                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500">
+                <option value="">Выберите...</option>
+                {activeAssignments.map(a => {
+                  const car = cars.find(c => c.id === a.car_id)
+                  const driver = drivers.find(d => d.id === a.driver_id)
+                  return (
+                    <option key={a.id} value={a.id}>
+                      {driver?.name} — {car?.name} ({car?.plate})
+                    </option>
+                  )
+                })}
+              </select>
+            </div>
+            <div className="w-40">
+              <label className="text-xs text-gray-400 mb-1 block">Дата</label>
+              <input type="date" required value={quickForm.date} onChange={e => setQuickForm(f => ({ ...f, date: e.target.value }))}
+                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500" />
+            </div>
+            <div className="w-40">
+              <label className="text-xs text-gray-400 mb-1 block">Сумма (тг)</label>
+              <input type="number" required min="1" placeholder="15000" value={quickForm.amount}
+                onChange={e => setQuickForm(f => ({ ...f, amount: e.target.value }))}
+                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500" />
+            </div>
+            <button type="submit" disabled={quickSaving}
+              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+              <Plus size={16} /> Добавить
+            </button>
+          </form>
+        )}
       </div>
 
       {/* Period totals */}

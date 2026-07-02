@@ -1,15 +1,17 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import type { Car } from '../types'
-import { Plus, Trash2 } from 'lucide-react'
+import { Plus, Trash2, Pencil } from 'lucide-react'
 
 const DAYS = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
+const EMPTY_FORM = { name: '', plate: '', daily_rate: '', rest_day: '0' }
 
 export default function Cars() {
   const [cars, setCars] = useState<Car[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
-  const [form, setForm] = useState({ name: '', plate: '', daily_rate: '', rest_day: '0' })
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [form, setForm] = useState(EMPTY_FORM)
 
   useEffect(() => {
     supabase.from('cars').select('*').order('created_at').then(({ data }) => {
@@ -18,20 +20,50 @@ export default function Cars() {
     })
   }, [])
 
-  async function handleAdd(e: React.FormEvent) {
+  function toggleAddForm() {
+    if (showForm && editingId === null) {
+      setShowForm(false)
+    } else {
+      setEditingId(null)
+      setForm(EMPTY_FORM)
+      setShowForm(true)
+    }
+  }
+
+  function startEdit(car: Car) {
+    setForm({ name: car.name, plate: car.plate, daily_rate: String(car.daily_rate), rest_day: String(car.rest_day) })
+    setEditingId(car.id)
+    setShowForm(true)
+  }
+
+  function closeForm() {
+    setShowForm(false)
+    setEditingId(null)
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    const { data: { user } } = await supabase.auth.getUser()
-    const { data, error } = await supabase.from('cars').insert({
-      user_id: user!.id,
+    const payload = {
       name: form.name.trim(),
       plate: form.plate.trim().toUpperCase(),
       daily_rate: parseFloat(form.daily_rate),
       rest_day: parseInt(form.rest_day),
-    }).select().single()
-    if (!error && data) {
-      setCars(prev => [...prev, data])
-      setForm({ name: '', plate: '', daily_rate: '', rest_day: '0' })
-      setShowForm(false)
+    }
+    if (editingId) {
+      const { data, error } = await supabase.from('cars').update(payload).eq('id', editingId).select().single()
+      if (!error && data) {
+        setCars(prev => prev.map(c => c.id === editingId ? data : c))
+        setForm(EMPTY_FORM)
+        closeForm()
+      }
+    } else {
+      const { data: { user } } = await supabase.auth.getUser()
+      const { data, error } = await supabase.from('cars').insert({ user_id: user!.id, ...payload }).select().single()
+      if (!error && data) {
+        setCars(prev => [...prev, data])
+        setForm(EMPTY_FORM)
+        closeForm()
+      }
     }
   }
 
@@ -48,7 +80,7 @@ export default function Cars() {
       <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <h2 className="text-2xl font-bold text-white">Машины</h2>
         <button
-          onClick={() => setShowForm(v => !v)}
+          onClick={toggleAddForm}
           className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
         >
           <Plus size={16} /> Добавить
@@ -56,7 +88,7 @@ export default function Cars() {
       </div>
 
       {showForm && (
-        <form onSubmit={handleAdd} className="bg-gray-900 border border-gray-800 rounded-xl p-6 mb-6 grid grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit} className="bg-gray-900 border border-gray-800 rounded-xl p-6 mb-6 grid grid-cols-2 gap-4">
           <div className="col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="text-xs text-gray-400 mb-1 block">Название</label>
@@ -94,8 +126,8 @@ export default function Cars() {
             </div>
           </div>
           <div className="col-span-2 flex gap-3 justify-end">
-            <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 text-sm text-gray-400 hover:text-white transition-colors">Отмена</button>
-            <button type="submit" className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">Сохранить</button>
+            <button type="button" onClick={closeForm} className="px-4 py-2 text-sm text-gray-400 hover:text-white transition-colors">Отмена</button>
+            <button type="submit" className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">{editingId ? 'Обновить' : 'Сохранить'}</button>
           </div>
         </form>
       )}
@@ -108,9 +140,14 @@ export default function Cars() {
                 <p className="font-semibold text-white">{car.name}</p>
                 <p className="text-sm text-gray-400">{car.plate}</p>
               </div>
-              <button onClick={() => handleDelete(car.id)} className="text-gray-600 hover:text-red-400 transition-colors">
-                <Trash2 size={15} />
-              </button>
+              <div className="flex items-center gap-2">
+                <button onClick={() => startEdit(car)} className="text-gray-600 hover:text-blue-400 transition-colors">
+                  <Pencil size={15} />
+                </button>
+                <button onClick={() => handleDelete(car.id)} className="text-gray-600 hover:text-red-400 transition-colors">
+                  <Trash2 size={15} />
+                </button>
+              </div>
             </div>
             <div className="flex gap-4 text-sm">
               <div>
