@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo } from 'react'
 import { supabase } from '../lib/supabase'
+import PageLoader from '../components/PageLoader'
 import type { Car, Driver, Assignment, Payment } from '../types'
 import { Plus, Trash2 } from 'lucide-react'
 
@@ -105,22 +106,22 @@ export default function Payments() {
     setPayments(prev => prev.filter(p => p.id !== id))
   }
 
-  if (loading) return <div className="p-8 text-gray-400">Загрузка...</div>
+  if (loading) return <PageLoader />
 
   const fmt = (n: number) => n.toLocaleString('ru-RU') + ' тг'
 
   return (
     <div className="p-4 md:p-8">
       <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
-        <h2 className="text-2xl font-bold text-white">Доходы / Платежи</h2>
+        <h2 className="text-2xl font-bold text-white tracking-tight">Доходы / Платежи</h2>
         <div className="flex flex-wrap gap-3">
           <input
             type="month" value={month} onChange={e => setMonth(e.target.value)}
-            className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
+            className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-500"
           />
           <button
             onClick={() => setShowForm(v => !v)}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+            className="flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-gray-950 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
           >
             <Plus size={16} /> Платёж
           </button>
@@ -128,12 +129,12 @@ export default function Payments() {
       </div>
 
       {showForm && (
-        <form onSubmit={handleAdd} className="bg-gray-900 border border-gray-800 rounded-xl p-6 mb-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <form onSubmit={handleAdd} className="bg-gray-900 border border-gray-800 rounded-xl shadow-lg shadow-black/20 p-6 mb-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="sm:col-span-2">
             <label className="text-xs text-gray-400 mb-1 block">Водитель / Машина</label>
             <select
               required value={form.assignment_id} onChange={e => setForm(f => ({ ...f, assignment_id: e.target.value }))}
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
+              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-500"
             >
               <option value="">Выберите...</option>
               {assignments.filter(a => !a.ended_at).map(a => {
@@ -150,23 +151,23 @@ export default function Payments() {
           <div>
             <label className="text-xs text-gray-400 mb-1 block">Дата</label>
             <input type="date" required value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))}
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500" />
+              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-500" />
           </div>
           <div>
             <label className="text-xs text-gray-400 mb-1 block">Сумма (тг)</label>
             <input type="number" required min="1" value={form.amount} onChange={e => setForm(f => ({ ...f, amount: e.target.value }))}
               placeholder="15000"
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500" />
+              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-500" />
           </div>
           <div className="sm:col-span-2">
             <label className="text-xs text-gray-400 mb-1 block">Заметка (опционально)</label>
             <input value={form.note} onChange={e => setForm(f => ({ ...f, note: e.target.value }))}
               placeholder="За 2 дня"
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500" />
+              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-500" />
           </div>
           <div className="sm:col-span-2 flex gap-3 justify-end">
             <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 text-sm text-gray-400 hover:text-white transition-colors">Отмена</button>
-            <button type="submit" className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">Сохранить</button>
+            <button type="submit" className="bg-amber-500 hover:bg-amber-400 text-gray-950 px-4 py-2 rounded-lg text-sm font-medium transition-colors">Сохранить</button>
           </div>
         </form>
       )}
@@ -176,7 +177,7 @@ export default function Payments() {
         <h3 className="text-lg font-semibold text-white mb-4">Состояние за месяц</h3>
         <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
           {stats.map(s => s && (
-            <div key={s.assignment.id} className="bg-gray-900 border border-gray-800 rounded-xl p-5">
+            <div key={s.assignment.id} className="bg-gray-900 border border-gray-800 rounded-xl shadow-lg shadow-black/20 p-5">
               <p className="font-semibold text-white">{s.driver.name}</p>
               <p className="text-sm text-gray-400 mb-4">{s.car.name} · {s.car.plate}</p>
               <div className="space-y-2 text-sm">
@@ -208,7 +209,7 @@ export default function Payments() {
       {/* Payment history */}
       <div>
         <h3 className="text-lg font-semibold text-white mb-4">История платежей</h3>
-        <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
+        <div className="bg-gray-900 border border-gray-800 rounded-xl shadow-lg shadow-black/20 overflow-hidden">
           {monthPayments.length === 0 ? (
             <p className="text-gray-500 p-6">Нет платежей за этот месяц.</p>
           ) : (

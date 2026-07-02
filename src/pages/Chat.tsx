@@ -87,7 +87,7 @@ export default function Chat() {
   return (
     <div className="flex flex-col h-full">
       <div className="border-b border-gray-800 px-4 py-4 md:px-8 md:py-5">
-        <h2 className="text-2xl font-bold text-white">AI-агент</h2>
+        <h2 className="text-2xl font-bold text-white tracking-tight">AI-агент</h2>
         <p className="text-sm text-gray-400 mt-1">Задайте вопрос на русском языке</p>
       </div>
 
@@ -96,7 +96,7 @@ export default function Chat() {
           <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             <div className={`max-w-2xl px-4 py-3 rounded-2xl text-sm leading-relaxed ${
               msg.role === 'user'
-                ? 'bg-blue-600 text-white rounded-br-sm'
+                ? 'bg-amber-500 text-gray-950 rounded-br-sm'
                 : 'bg-gray-900 border border-gray-800 text-gray-200 rounded-bl-sm'
             }`}>
               {msg.content}
@@ -136,10 +136,10 @@ export default function Chat() {
           value={input}
           onChange={e => setInput(e.target.value)}
           placeholder="Например: Сколько должен Иван за июнь?"
-          className="flex-1 bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-blue-500"
+          className="flex-1 bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-amber-500"
         />
         <button type="submit" disabled={loading || !input.trim()}
-          className="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white px-4 py-3 rounded-xl transition-colors">
+          className="bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-gray-950 px-4 py-3 rounded-xl transition-colors">
           <Send size={18} />
         </button>
       </form>

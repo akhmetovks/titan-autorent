@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
+import PageLoader from '../components/PageLoader'
 import type { Car, Expense, ExpenseCategory } from '../types'
 import { Plus, Trash2, Tag } from 'lucide-react'
 
@@ -97,18 +98,18 @@ export default function Expenses() {
     setExpenses(prev => prev.filter(e => e.id !== id))
   }
 
-  if (loading) return <div className="p-8 text-gray-400">Загрузка...</div>
+  if (loading) return <PageLoader />
 
   const fmt = (n: number) => n.toLocaleString('ru-RU') + ' тг'
 
   return (
     <div className="p-4 md:p-8">
       <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
-        <h2 className="text-2xl font-bold text-white">Расходы</h2>
+        <h2 className="text-2xl font-bold text-white tracking-tight">Расходы</h2>
         <div className="flex flex-wrap gap-3">
           <input
             type="month" value={month} onChange={e => setMonth(e.target.value)}
-            className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
+            className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-500"
           />
           <button
             onClick={() => setShowCategories(v => !v)}
@@ -118,7 +119,7 @@ export default function Expenses() {
           </button>
           <button
             onClick={() => setShowForm(v => !v)}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+            className="flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-gray-950 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
           >
             <Plus size={16} /> Расход
           </button>
@@ -126,7 +127,7 @@ export default function Expenses() {
       </div>
 
       {showCategories && (
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 mb-6">
+        <div className="bg-gray-900 border border-gray-800 rounded-xl shadow-lg shadow-black/20 p-6 mb-6">
           <h3 className="text-base font-semibold text-white mb-4">Категории расходов</h3>
           <div className="flex flex-wrap gap-2 mb-4">
             {categories.map(c => (
@@ -143,19 +144,19 @@ export default function Expenses() {
             <input
               value={newCategory} onChange={e => setNewCategory(e.target.value)}
               placeholder="Новая категория"
-              className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
+              className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-500"
             />
-            <button type="submit" className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">Добавить</button>
+            <button type="submit" className="bg-amber-500 hover:bg-amber-400 text-gray-950 px-4 py-2 rounded-lg text-sm font-medium transition-colors">Добавить</button>
           </form>
         </div>
       )}
 
       {showForm && (
-        <form onSubmit={handleAdd} className="bg-gray-900 border border-gray-800 rounded-xl p-6 mb-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <form onSubmit={handleAdd} className="bg-gray-900 border border-gray-800 rounded-xl shadow-lg shadow-black/20 p-6 mb-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="text-xs text-gray-400 mb-1 block">Машина</label>
             <select required value={form.car_id} onChange={e => setForm(f => ({ ...f, car_id: e.target.value }))}
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500">
+              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-500">
               <option value="">Выберите...</option>
               {cars.map(c => <option key={c.id} value={c.id}>{c.name} ({c.plate})</option>)}
             </select>
@@ -163,7 +164,7 @@ export default function Expenses() {
           <div>
             <label className="text-xs text-gray-400 mb-1 block">Категория</label>
             <select required value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500">
+              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-500">
               <option value="">Выберите...</option>
               {categories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
             </select>
@@ -171,23 +172,23 @@ export default function Expenses() {
           <div>
             <label className="text-xs text-gray-400 mb-1 block">Дата</label>
             <input type="date" required value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))}
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500" />
+              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-500" />
           </div>
           <div>
             <label className="text-xs text-gray-400 mb-1 block">Сумма (тг)</label>
             <input type="number" required min="1" value={form.amount} onChange={e => setForm(f => ({ ...f, amount: e.target.value }))}
               placeholder="5000"
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500" />
+              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-500" />
           </div>
           <div className="sm:col-span-2">
             <label className="text-xs text-gray-400 mb-1 block">Заметка (опционально)</label>
             <input value={form.note} onChange={e => setForm(f => ({ ...f, note: e.target.value }))}
               placeholder="Замена колодок"
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500" />
+              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-500" />
           </div>
           <div className="sm:col-span-2 flex gap-3 justify-end">
             <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 text-sm text-gray-400 hover:text-white transition-colors">Отмена</button>
-            <button type="submit" className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">Сохранить</button>
+            <button type="submit" className="bg-amber-500 hover:bg-amber-400 text-gray-950 px-4 py-2 rounded-lg text-sm font-medium transition-colors">Сохранить</button>
           </div>
         </form>
       )}
@@ -197,7 +198,7 @@ export default function Expenses() {
         <p className="text-white font-semibold">Итого: {fmt(total)}</p>
       </div>
 
-      <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
+      <div className="bg-gray-900 border border-gray-800 rounded-xl shadow-lg shadow-black/20 overflow-hidden">
         {monthExpenses.length === 0 ? (
           <p className="text-gray-500 p-6">Нет расходов за этот месяц.</p>
         ) : (

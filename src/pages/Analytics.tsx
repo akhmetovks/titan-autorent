@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo } from 'react'
 import { supabase } from '../lib/supabase'
+import PageLoader from '../components/PageLoader'
 import type { Car, Driver, Payment, Expense, Assignment } from '../types'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts'
 import { Plus } from 'lucide-react'
@@ -137,28 +138,28 @@ export default function Analytics() {
     })
   }, [cars, assignments, payments, expenses, start, end])
 
-  if (loading) return <div className="p-8 text-gray-400">Загрузка...</div>
+  if (loading) return <PageLoader />
 
   const fmt = (n: number) => n.toLocaleString('ru-RU') + ' тг'
 
   return (
     <div className="p-4 md:p-8">
       <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
-        <h2 className="text-2xl font-bold text-white">Аналитика</h2>
+        <h2 className="text-2xl font-bold text-white tracking-tight">Аналитика</h2>
         <div className="flex flex-wrap items-center gap-2">
           <button onClick={selectThisMonth} className="bg-gray-800 hover:bg-gray-700 text-white px-3 py-2 rounded-lg text-sm transition-colors">Этот месяц</button>
           <button onClick={selectThisYear} className="bg-gray-800 hover:bg-gray-700 text-white px-3 py-2 rounded-lg text-sm transition-colors">Этот год</button>
           <button onClick={selectLastYear} className="bg-gray-800 hover:bg-gray-700 text-white px-3 py-2 rounded-lg text-sm transition-colors">Прошлый год</button>
           <input type="date" value={start} onChange={e => setStart(e.target.value)}
-            className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500" />
+            className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-500" />
           <span className="text-gray-500 text-sm">—</span>
           <input type="date" value={end} onChange={e => setEnd(e.target.value)}
-            className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500" />
+            className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-500" />
         </div>
       </div>
 
       {/* Quick payment widget */}
-      <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 mb-8">
+      <div className="bg-gray-900 border border-gray-800 rounded-xl shadow-lg shadow-black/20 p-5 mb-8">
         <h3 className="text-base font-semibold text-white mb-4">Быстрый платёж</h3>
         {activeAssignments.length === 0 ? (
           <p className="text-gray-500 text-sm">Нет активных назначений — сначала назначьте водителя на машину.</p>
@@ -167,7 +168,7 @@ export default function Analytics() {
             <div className="flex-1 min-w-[220px]">
               <label className="text-xs text-gray-400 mb-1 block">Водитель / Машина</label>
               <select required value={quickForm.assignment_id} onChange={e => setQuickForm(f => ({ ...f, assignment_id: e.target.value }))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500">
+                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-500">
                 <option value="">Выберите...</option>
                 {activeAssignments.map(a => {
                   const car = cars.find(c => c.id === a.car_id)
@@ -183,16 +184,16 @@ export default function Analytics() {
             <div className="w-40">
               <label className="text-xs text-gray-400 mb-1 block">Дата</label>
               <input type="date" required value={quickForm.date} onChange={e => setQuickForm(f => ({ ...f, date: e.target.value }))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500" />
+                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-500" />
             </div>
             <div className="w-40">
               <label className="text-xs text-gray-400 mb-1 block">Сумма (тг)</label>
               <input type="number" required min="1" placeholder="15000" value={quickForm.amount}
                 onChange={e => setQuickForm(f => ({ ...f, amount: e.target.value }))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500" />
+                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-500" />
             </div>
             <button type="submit" disabled={quickSaving}
-              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+              className="flex items-center gap-2 bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-gray-950 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
               <Plus size={16} /> Добавить
             </button>
           </form>
@@ -201,22 +202,22 @@ export default function Analytics() {
 
       {/* Period totals */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
+        <div className="bg-gray-900 border border-gray-800 rounded-xl shadow-lg shadow-black/20 p-5">
           <p className="text-gray-400 text-sm mb-1">Доход за период</p>
           <p className="text-2xl font-bold text-green-400">{fmt(periodTotals.income)}</p>
         </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
+        <div className="bg-gray-900 border border-gray-800 rounded-xl shadow-lg shadow-black/20 p-5">
           <p className="text-gray-400 text-sm mb-1">Расходы за период</p>
           <p className="text-2xl font-bold text-red-400">{fmt(periodTotals.expense)}</p>
         </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
+        <div className="bg-gray-900 border border-gray-800 rounded-xl shadow-lg shadow-black/20 p-5">
           <p className="text-gray-400 text-sm mb-1">Прибыль за период</p>
-          <p className={`text-2xl font-bold ${periodTotals.profit >= 0 ? 'text-blue-400' : 'text-red-400'}`}>{fmt(periodTotals.profit)}</p>
+          <p className={`text-2xl font-bold ${periodTotals.profit >= 0 ? 'text-amber-400' : 'text-red-400'}`}>{fmt(periodTotals.profit)}</p>
         </div>
       </div>
 
       {/* Chart */}
-      <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 mb-8">
+      <div className="bg-gray-900 border border-gray-800 rounded-xl shadow-lg shadow-black/20 p-6 mb-8">
         <h3 className="text-base font-semibold text-white mb-6">Доходы и расходы по месяцам</h3>
         {chartData.length === 0 ? (
           <p className="text-gray-500 text-sm">Некорректный период.</p>
@@ -242,7 +243,7 @@ export default function Analytics() {
       <h3 className="text-lg font-semibold text-white mb-4">По машинам</h3>
       <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
         {carStats.map(({ car, income, expense, profit }) => (
-          <div key={car.id} className="bg-gray-900 border border-gray-800 rounded-xl p-5">
+          <div key={car.id} className="bg-gray-900 border border-gray-800 rounded-xl shadow-lg shadow-black/20 p-5 hover:border-amber-500/30 transition-colors">
             <p className="font-semibold text-white mb-1">{car.name}</p>
             <p className="text-sm text-gray-400 mb-4">{car.plate}</p>
             <div className="space-y-2 text-sm">
@@ -256,7 +257,7 @@ export default function Analytics() {
               </div>
               <div className="flex justify-between border-t border-gray-800 pt-2">
                 <span className="text-gray-400">Прибыль</span>
-                <span className={`font-semibold ${profit >= 0 ? 'text-blue-400' : 'text-red-400'}`}>{fmt(profit)}</span>
+                <span className={`font-semibold ${profit >= 0 ? 'text-amber-400' : 'text-red-400'}`}>{fmt(profit)}</span>
               </div>
             </div>
           </div>

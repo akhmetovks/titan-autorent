@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 import { Car, Users, CreditCard, Wrench, BarChart2, MessageSquare, LogOut, Menu, X } from 'lucide-react'
 import { supabase } from '../lib/supabase'
+import Logo from './Logo'
 
 const nav = [
   { to: '/', label: 'Аналитика', icon: BarChart2 },
@@ -24,7 +25,8 @@ export default function Layout() {
         <button onClick={() => setMobileOpen(true)} className="text-gray-400 hover:text-white">
           <Menu size={22} />
         </button>
-        <h1 className="ml-3 text-base font-bold text-white tracking-tight">Titan Autorent</h1>
+        <Logo size={24} className="ml-3" />
+        <h1 className="ml-2 text-base font-bold text-white tracking-tight">Titan Autorent</h1>
       </div>
 
       {/* Mobile overlay */}
@@ -42,7 +44,10 @@ export default function Layout() {
         }`}
       >
         <div className="px-5 py-5 border-b border-gray-800 flex items-center justify-between">
-          <h1 className="text-lg font-bold text-white tracking-tight">Titan Autorent</h1>
+          <div className="flex items-center gap-2.5">
+            <Logo size={30} />
+            <h1 className="text-lg font-bold text-white tracking-tight">Titan Autorent</h1>
+          </div>
           <button onClick={() => setMobileOpen(false)} className="md:hidden text-gray-400 hover:text-white">
             <X size={20} />
           </button>
@@ -57,7 +62,7 @@ export default function Layout() {
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
                   isActive
-                    ? 'bg-blue-600 text-white'
+                    ? 'bg-amber-500 text-gray-950'
                     : 'text-gray-400 hover:bg-gray-800 hover:text-white'
                 }`
               }

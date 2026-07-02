@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo } from 'react'
 import { supabase } from '../lib/supabase'
+import PageLoader from '../components/PageLoader'
 import type { Car, MaintenanceRecord, MaintenanceWork } from '../types'
 import { Plus, Trash2, AlertTriangle, CheckCircle, Wrench } from 'lucide-react'
 
@@ -138,17 +139,17 @@ export default function Maintenance() {
     }))
   }
 
-  if (loading) return <div className="p-8 text-gray-400">Загрузка...</div>
+  if (loading) return <PageLoader />
 
   const fmt = (n: number) => n.toLocaleString('ru-RU') + ' тг'
 
   return (
     <div className="p-4 md:p-8">
       <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
-        <h2 className="text-2xl font-bold text-white">Техническое обслуживание</h2>
+        <h2 className="text-2xl font-bold text-white tracking-tight">Техническое обслуживание</h2>
         <div className="flex flex-wrap gap-3">
           <select value={selectedCar} onChange={e => { setSelectedCar(e.target.value); ensureDefaultWorks(e.target.value) }}
-            className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500">
+            className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-500">
             {cars.map(c => <option key={c.id} value={c.id}>{c.name} ({c.plate})</option>)}
           </select>
           <button onClick={() => setShowWorksPanel(v => !v)}
@@ -156,14 +157,14 @@ export default function Maintenance() {
             <Wrench size={16} /> Виды работ
           </button>
           <button onClick={() => { setShowForm(v => !v); setFormError(null) }}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+            className="flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-gray-950 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
             <Plus size={16} /> Запись ТО
           </button>
         </div>
       </div>
 
       {showWorksPanel && (
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 mb-6">
+        <div className="bg-gray-900 border border-gray-800 rounded-xl shadow-lg shadow-black/20 p-6 mb-6">
           <h3 className="text-base font-semibold text-white mb-4">Виды работ для этой машины</h3>
           <div className="flex flex-wrap gap-2 mb-4">
             {carWorks.map(w => (
@@ -180,26 +181,26 @@ export default function Maintenance() {
             <input
               value={newWork.name} onChange={e => setNewWork(w => ({ ...w, name: e.target.value }))}
               placeholder="Название работы"
-              className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
+              className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-500"
             />
             <input
               type="number" min="1" value={newWork.interval_km} onChange={e => setNewWork(w => ({ ...w, interval_km: e.target.value }))}
               placeholder="Интервал, км"
-              className="w-40 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
+              className="w-40 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-500"
             />
-            <button type="submit" className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">Добавить</button>
+            <button type="submit" className="bg-amber-500 hover:bg-amber-400 text-gray-950 px-4 py-2 rounded-lg text-sm font-medium transition-colors">Добавить</button>
           </form>
         </div>
       )}
 
       {/* Mileage checker */}
-      <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 mb-6">
+      <div className="bg-gray-900 border border-gray-800 rounded-xl shadow-lg shadow-black/20 p-6 mb-6">
         <h3 className="text-base font-semibold text-white mb-4">Состояние ТО</h3>
         <div className="flex gap-3 mb-6">
           <input
             type="number" value={currentMileage} onChange={e => setCurrentMileage(e.target.value)}
             placeholder="Введите текущий пробег (км)"
-            className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500 w-72"
+            className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-500 w-72"
           />
         </div>
         {status.length > 0 ? (
@@ -242,18 +243,18 @@ export default function Maintenance() {
 
       {/* Add record form */}
       {showForm && (
-        <form onSubmit={handleAdd} className="bg-gray-900 border border-gray-800 rounded-xl p-6 mb-6 space-y-4">
+        <form onSubmit={handleAdd} className="bg-gray-900 border border-gray-800 rounded-xl shadow-lg shadow-black/20 p-6 mb-6 space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="text-xs text-gray-400 mb-1 block">Дата</label>
               <input type="date" required value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500" />
+                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-500" />
             </div>
             <div>
               <label className="text-xs text-gray-400 mb-1 block">Пробег на момент ТО (км)</label>
               <input type="number" required min="0" value={form.mileage} onChange={e => setForm(f => ({ ...f, mileage: e.target.value }))}
                 placeholder="87400"
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500" />
+                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-500" />
             </div>
           </div>
 
@@ -264,7 +265,7 @@ export default function Maintenance() {
                 <label key={w.id} className="flex items-center gap-2 cursor-pointer">
                   <input type="checkbox" checked={form.works.includes(w.name)}
                     onChange={() => toggleWork(w.name)}
-                    className="rounded border-gray-600 bg-gray-800 text-blue-500" />
+                    className="rounded border-gray-600 bg-gray-800 text-amber-500" />
                   <span className="text-sm text-gray-300">{w.name}</span>
                 </label>
               ))}
@@ -276,13 +277,13 @@ export default function Maintenance() {
               <label className="text-xs text-gray-400 mb-1 block">Стоимость (тг, опционально)</label>
               <input type="number" min="0" value={form.cost} onChange={e => setForm(f => ({ ...f, cost: e.target.value }))}
                 placeholder="25000"
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500" />
+                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-500" />
             </div>
             <div>
               <label className="text-xs text-gray-400 mb-1 block">Заметка (опционально)</label>
               <input value={form.note} onChange={e => setForm(f => ({ ...f, note: e.target.value }))}
                 placeholder="Замена у дилера"
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500" />
+                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-500" />
             </div>
           </div>
 
@@ -290,7 +291,7 @@ export default function Maintenance() {
 
           <div className="flex gap-3 justify-end">
             <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 text-sm text-gray-400 hover:text-white transition-colors">Отмена</button>
-            <button type="submit" className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">Сохранить</button>
+            <button type="submit" className="bg-amber-500 hover:bg-amber-400 text-gray-950 px-4 py-2 rounded-lg text-sm font-medium transition-colors">Сохранить</button>
           </div>
         </form>
       )}
@@ -305,7 +306,7 @@ export default function Maintenance() {
             const prev = carRecords[i + 1]
             const kmSincePrev = prev ? rec.mileage - prev.mileage : null
             return (
-              <div key={rec.id} className="bg-gray-900 border border-gray-800 rounded-xl p-5">
+              <div key={rec.id} className="bg-gray-900 border border-gray-800 rounded-xl shadow-lg shadow-black/20 p-5">
                 <div className="flex items-start justify-between mb-3">
                   <div>
                     <p className="font-medium text-white">{new Date(rec.date).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
@@ -323,7 +324,7 @@ export default function Maintenance() {
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {rec.works.map(w => (
-                    <span key={w} className="bg-blue-900/40 text-blue-300 text-xs px-2 py-1 rounded-md">{w}</span>
+                    <span key={w} className="bg-amber-900/30 text-amber-300 text-xs px-2 py-1 rounded-md">{w}</span>
                   ))}
                 </div>
                 {rec.note && <p className="text-sm text-gray-500 mt-2">{rec.note}</p>}

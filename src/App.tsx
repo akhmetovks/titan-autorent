@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { Loader2 } from 'lucide-react'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from './lib/supabase'
 import Auth from './pages/Auth'
@@ -30,8 +31,9 @@ export default function App() {
 
   if (checking) {
     return (
-      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
-        <p className="text-gray-400">Загрузка...</p>
+      <div className="min-h-screen bg-gray-950 flex items-center justify-center gap-2 text-gray-400">
+        <Loader2 size={16} className="animate-spin" />
+        Загрузка...
       </div>
     )
   }
