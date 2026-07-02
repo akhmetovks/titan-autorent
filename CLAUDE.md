@@ -48,7 +48,9 @@ src/
     Payments.tsx         — платежи + расчёт долга по рабочим дням
     Expenses.tsx         — расходы по категориям
     Maintenance.tsx      — ТО: записи + трекер оставшихся км
-    Chat.tsx             — AI-агент (заглушка, нужна Edge Function)
+    Chat.tsx             — AI-агент: чат + голосовой ввод (Web Speech API)
+supabase/
+  functions/chat/index.ts — Edge Function: read-only Q&A по данным пользователя через Claude API (haiku)
 ```
 
 ## Ключевая бизнес-логика
@@ -63,8 +65,20 @@ src/
 Цвета: зелёный (норма), жёлтый (≥80% интервала), красный (просрочено).
 При первом выборе машины автоматически создаются 6 стандартных видов работ.
 
+### AI-агент (Chat.tsx + supabase/functions/chat)
+Read-only Q&A-ассистент: отвечает на вопросы по данным пользователя (долги, платежи, ТО и т.д.), ничего не создаёт и не изменяет.
+Frontend вызывает `supabase.functions.invoke('chat', { body: { messages } })` — авторизация идёт через JWT пользователя, Edge Function создаёт Supabase-клиент с этим JWT, так что RLS ограничивает выборку только данными текущего пользователя.
+Edge Function собирает все данные пользователя (cars, drivers, assignments, payments, expenses, maintenance_records, maintenance_works, expense_categories) в JSON, кладёт в system prompt и вызывает Claude API (`claude-haiku-4-5`) напрямую через `fetch` (Deno runtime, без SDK).
+Голосовой ввод — через браузерный Web Speech API (`SpeechRecognition`/`webkitSpeechRecognition`), текст попадает в поле ввода, отправка вручную. Работает в Chrome/Edge, не поддерживается в Firefox.
+
+**Деплой Edge Function** (нужно один раз выполнить вручную, CLI не доступен из среды разработки):
+```bash
+supabase functions deploy chat --project-ref rdahqmrndjuurmkwgnvo
+supabase secrets set ANTHROPIC_API_KEY=sk-ant-... --project-ref rdahqmrndjuurmkwgnvo
+```
+`SUPABASE_URL` и `SUPABASE_ANON_KEY` внутри функции доступны автоматически (резервируются платформой), задавать вручную не нужно.
+
 ## Что планируется сделать
-- **AI-агент**: Supabase Edge Function + Claude API (haiku). Chat.tsx уже готов, нужна функция `/supabase/functions/chat/index.ts`
 - **GPS интеграция**: платформа GlonassSoft — отложено до получения API ключей
 
 ## Команды

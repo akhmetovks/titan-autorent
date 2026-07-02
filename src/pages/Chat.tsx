@@ -1,10 +1,30 @@
 import { useState, useRef, useEffect } from 'react'
-import { Send } from 'lucide-react'
+import { Send, Mic, MicOff } from 'lucide-react'
+import { supabase } from '../lib/supabase'
 
 interface Message {
   role: 'user' | 'assistant'
   content: string
 }
+
+interface SpeechRecognitionResultLike {
+  results: { [index: number]: { [index: number]: { transcript: string } } }
+}
+
+interface SpeechRecognitionLike {
+  lang: string
+  interimResults: boolean
+  maxAlternatives: number
+  onresult: ((e: SpeechRecognitionResultLike) => void) | null
+  onend: (() => void) | null
+  onerror: (() => void) | null
+  start: () => void
+  stop: () => void
+}
+
+const SpeechRecognitionCtor: (new () => SpeechRecognitionLike) | undefined =
+  (window as unknown as { SpeechRecognition?: new () => SpeechRecognitionLike }).SpeechRecognition ||
+  (window as unknown as { webkitSpeechRecognition?: new () => SpeechRecognitionLike }).webkitSpeechRecognition
 
 export default function Chat() {
   const [messages, setMessages] = useState<Message[]>([
@@ -12,29 +32,51 @@ export default function Chat() {
   ])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
+  const [listening, setListening] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
+  const recognitionRef = useRef<SpeechRecognitionLike | null>(null)
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
+
+  function toggleVoice() {
+    if (!SpeechRecognitionCtor) return
+    if (listening) {
+      recognitionRef.current?.stop()
+      return
+    }
+    const recognition = new SpeechRecognitionCtor()
+    recognition.lang = 'ru-RU'
+    recognition.interimResults = false
+    recognition.maxAlternatives = 1
+    recognition.onresult = (e) => {
+      const transcript = e.results[0][0].transcript
+      setInput(prev => (prev ? prev + ' ' : '') + transcript)
+    }
+    recognition.onend = () => setListening(false)
+    recognition.onerror = () => setListening(false)
+    recognitionRef.current = recognition
+    recognition.start()
+    setListening(true)
+  }
 
   async function handleSend(e: React.FormEvent) {
     e.preventDefault()
     const text = input.trim()
     if (!text || loading) return
 
-    setMessages(prev => [...prev, { role: 'user', content: text }])
+    const nextMessages = [...messages, { role: 'user' as const, content: text }]
+    setMessages(nextMessages)
     setInput('')
     setLoading(true)
 
     try {
-      // TODO: call Supabase Edge Function with Claude API
-      // For now — placeholder response
-      await new Promise(r => setTimeout(r, 800))
-      setMessages(prev => [...prev, {
-        role: 'assistant',
-        content: 'AI-агент будет доступен после настройки Supabase Edge Function с вашим Claude API ключом. Функция уже подготовлена в /supabase/functions/chat.'
-      }])
+      const { data, error } = await supabase.functions.invoke('chat', {
+        body: { messages: nextMessages },
+      })
+      if (error) throw error
+      setMessages(prev => [...prev, { role: 'assistant', content: data?.reply || 'Не удалось получить ответ.' }])
     } catch {
       setMessages(prev => [...prev, { role: 'assistant', content: 'Ошибка соединения с агентом.' }])
     } finally {
@@ -49,7 +91,7 @@ export default function Chat() {
         <p className="text-sm text-gray-400 mt-1">Задайте вопрос на русском языке</p>
       </div>
 
-      <div className="flex-1 overflow-auto px-8 py-6 space-y-4">
+      <div className="flex-1 overflow-auto px-4 py-6 md:px-8 space-y-4">
         {messages.map((msg, i) => (
           <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             <div className={`max-w-2xl px-4 py-3 rounded-2xl text-sm leading-relaxed ${
@@ -75,7 +117,21 @@ export default function Chat() {
         <div ref={bottomRef} />
       </div>
 
-      <form onSubmit={handleSend} className="border-t border-gray-800 px-8 py-4 flex gap-3">
+      <form onSubmit={handleSend} className="border-t border-gray-800 px-4 py-4 md:px-8 flex gap-3">
+        {SpeechRecognitionCtor && (
+          <button
+            type="button"
+            onClick={toggleVoice}
+            title={listening ? 'Остановить запись' : 'Голосовой ввод'}
+            className={`px-4 py-3 rounded-xl transition-colors ${
+              listening
+                ? 'bg-red-600 hover:bg-red-500 text-white'
+                : 'bg-gray-900 border border-gray-700 text-gray-300 hover:text-white'
+            }`}
+          >
+            {listening ? <MicOff size={18} /> : <Mic size={18} />}
+          </button>
+        )}
         <input
           value={input}
           onChange={e => setInput(e.target.value)}
